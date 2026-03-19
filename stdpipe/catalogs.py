@@ -637,13 +637,22 @@ def xmatch_objects(obj, catalog='ps1', sr=3 / 3600, col_ra='ra', col_dec='dec'):
     else:
         vizier_id = catalog
 
-    xcat = XMatch().query(
-        cat1=obj,
-        cat2='vizier:' + vizier_id,
-        max_distance=sr * u.deg,
-        colRA1=col_ra,
-        colDec1=col_dec,
-    )
+    try:
+        xmatch = XMatch()
+        # astroquery still ships the old u-strasbg.fr URL; override with the
+        # current CDS domain to avoid connection resets on large uploads.
+        xmatch.URL = 'http://cdsxmatch.cds.unistra.fr/xmatch/api/v1/sync'
+        xcat = xmatch.query(
+            cat1=obj,
+            cat2='vizier:' + vizier_id,
+            max_distance=sr * u.deg,
+            colRA1=col_ra,
+            colDec1=col_dec,
+        )
+    except Exception as e:
+        import warnings
+        warnings.warn(f"CDS XMatch query failed for catalogue {catalog}: {e}")
+        return None
 
     return xcat
 
