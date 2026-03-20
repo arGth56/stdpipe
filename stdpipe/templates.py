@@ -704,7 +704,7 @@ def get_survey_image(
         **kwargs
     )
 
-    if ext == 'mask' and survey == 'ps1':
+    if ext == 'mask' and survey == 'ps1' and coadd is not None:
         coadd &= (
             ~0x8000
         )  # Remove undocumented PS1 'temporary marked' mask bit that is masking seemingly good pixels
