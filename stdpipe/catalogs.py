@@ -649,9 +649,7 @@ def xmatch_objects(obj, catalog='ps1', sr=3 / 3600, col_ra='ra', col_dec='dec'):
             colRA1=col_ra,
             colDec1=col_dec,
         )
-    except Exception as e:
-        import warnings
-        warnings.warn(f"CDS XMatch query failed for catalogue {catalog}: {e}")
+    except Exception:
         return None
 
     return xcat

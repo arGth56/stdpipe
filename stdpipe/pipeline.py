@@ -399,13 +399,28 @@ def filter_transient_candidates(
         if not np.any(cand_idx):
             break
 
-        xcat = catalogs.xmatch_objects(
-            obj[cand_idx][[col_id, obj_col_ra, obj_col_dec]],
-            catname,
-            sr,
-            col_ra=obj_col_ra,
-            col_dec=obj_col_dec,
-        )
+        try:
+            xcat = catalogs.xmatch_objects(
+                obj[cand_idx][[col_id, obj_col_ra, obj_col_dec]],
+                catname,
+                sr,
+                col_ra=obj_col_ra,
+                col_dec=obj_col_dec,
+            )
+        except Exception as e:
+            msg = str(e)
+            if 'too many jobs' in msg.lower():
+                log(f"Warning: CDS XMatch is busy (too many concurrent jobs on their "
+                    f"server). Catalogue {catname} skipped - please retry in a few "
+                    f"minutes.")
+            elif 'connection' in msg.lower() or '503' in msg or '504' in msg:
+                log(f"Warning: CDS XMatch service is temporarily unavailable "
+                    f"({msg}). Catalogue {catname} skipped - please retry later.")
+            else:
+                log(f"Warning: CDS XMatch query failed for catalogue {catname}: "
+                    f"{msg}")
+            xcat = None
+
         if xcat is not None and len(xcat):
             if callable(vizier_checker_fn):
                 # Pass matched results through user-supplied checker
