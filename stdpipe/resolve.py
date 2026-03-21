@@ -48,19 +48,22 @@ def tnsResolve(name='AT2023lxx'):
     if m:
         name = m[1] + ' ' + m[2]
 
-    for reverse in [False, True]:
-        params = {'resolver': 'tns', 'name': name}
-        if reverse:
-            params.update({'reverse': True})
+    try:
+        for reverse in [False, True]:
+            params = {'resolver': 'tns', 'name': name}
+            if reverse:
+                params.update({'reverse': True})
 
-        r = requests.post("https://api.fink-portal.org/api/v1/resolver", json=params)
+            r = requests.post("https://api.fink-portal.org/api/v1/resolver", json=params)
 
-        res = json.loads(r.content)
+            res = json.loads(r.content)
+            if res:
+                break
+
         if res:
-            break
-
-    if res:
-        return res[0]['d:fullname'], res[0]['d:ra'], res[0]['d:declination']
+            return res[0]['d:fullname'], res[0]['d:ra'], res[0]['d:declination']
+    except Exception:
+        pass
 
     return None, None, None
 
