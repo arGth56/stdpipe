@@ -709,6 +709,9 @@ def xmatch_skybot(
         # Nothing found in SkyBot
         return None
 
+    if xcat is None or len(xcat) == 0:
+        return None
+
     # Cross-match objects
     oidx, cidx, dist = astrometry.spherical_match(
         obj[col_ra], obj[col_dec], xcat['RA'], xcat['DEC'], 10 / 3600
