@@ -127,22 +127,46 @@ def get_cat_vizier(
     log('Center: %.3f %.3f' % (ra0, dec0), 'radius: %.3f' % sr0)
     log('Filters:', filters)
 
-    vizier = Vizier(row_limit=limit, columns=columns, column_filters=filters)
-    cats = vizier.query_region(
-        SkyCoord(ra0, dec0, unit='deg'), radius=sr0 * u.deg, catalog=vizier_id
-    )
+    vizier_mirrors = [
+        'https://vizier.cds.unistra.fr',
+        'https://vizier.cfa.harvard.edu',
+    ]
 
-    if not cats or not len(cats) == 1:
-        cats = vizier.query_region(
-            SkyCoord(ra0, dec0, unit='deg'),
-            radius=sr0 * u.deg,
-            catalog=vizier_id,
-            cache=False,
-        )
+    cats = None
+    coord = SkyCoord(ra0, dec0, unit='deg')
+
+    for mirror_url in vizier_mirrors:
+        vizier = Vizier(row_limit=limit, columns=columns, column_filters=filters)
+        vizier.VIZIER_SERVER = mirror_url.replace('https://', '')
+
+        try:
+            cats = vizier.query_region(
+                coord, radius=sr0 * u.deg, catalog=vizier_id
+            )
+        except Exception as e:
+            log('VizieR query failed on %s: %s' % (mirror_url, str(e)[:200]))
+            cats = None
 
         if not cats or not len(cats) == 1:
-            log('Error requesting catalogue', catalog)
-            return None
+            try:
+                cats = vizier.query_region(
+                    coord,
+                    radius=sr0 * u.deg,
+                    catalog=vizier_id,
+                    cache=False,
+                )
+            except Exception as e:
+                log('VizieR retry failed on %s: %s' % (mirror_url, str(e)[:200]))
+                cats = None
+
+        if cats and len(cats) == 1:
+            if mirror_url != vizier_mirrors[0]:
+                log('Using VizieR mirror:', mirror_url)
+            break
+
+    if not cats or not len(cats) == 1:
+        log('Error requesting catalogue', catalog, '(all mirrors failed)')
+        return None
 
     cat = cats[0]
     cat.meta['vizier_id'] = vizier_id
