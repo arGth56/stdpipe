@@ -428,11 +428,11 @@ def filter_transient_candidates(
                 xidx = vizier_checker_fn(xobj, xcat, catname)
                 xcat = xcat[xidx]
 
-            cand_idx &= ~np.in1d(obj[col_id], xcat[col_id])
+            cand_idx &= ~np.isin(obj[col_id], xcat[col_id])
 
             if remove == False:
                 obj_in['candidate_vizier_' + catname][
-                    np.in1d(obj[col_id], xcat[col_id])
+                    np.isin(obj[col_id], xcat[col_id])
                 ] = True
 
         log(
@@ -459,11 +459,11 @@ def filter_transient_candidates(
                 col_id=col_id
             )
             if xcat is not None and len(xcat):
-                cand_idx &= ~np.in1d(obj[col_id], xcat[col_id])
+                cand_idx &= ~np.isin(obj[col_id], xcat[col_id])
 
                 if remove == False:
                     obj_in['candidate_skybot'][
-                        np.in1d(obj[col_id], xcat[col_id])
+                        np.isin(obj[col_id], xcat[col_id])
                     ] = True
 
             log(np.sum(cand_idx), 'remains after matching with SkyBot')
@@ -482,10 +482,10 @@ def filter_transient_candidates(
             col_dec=obj_col_dec,
         )
         if xcat is not None and len(xcat):
-            cand_idx &= ~np.in1d(obj[col_id], xcat[col_id])
+            cand_idx &= ~np.isin(obj[col_id], xcat[col_id])
 
             if remove == False:
-                obj_in['candidate_ned'][np.in1d(obj[col_id], xcat[col_id])] = True
+                obj_in['candidate_ned'][np.isin(obj[col_id], xcat[col_id])] = True
 
         log(np.sum(cand_idx), 'remains after matching with NED')
 
